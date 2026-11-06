@@ -20,6 +20,13 @@ import { join } from "node:path";
 const openMock = vi.hoisted(() => vi.fn());
 vi.mock("open", () => ({ default: openMock }));
 
+const { ensureWebBuildMock } = vi.hoisted(() => ({
+  ensureWebBuildMock: vi.fn(),
+}));
+vi.mock("../../../../server/ensure-web-build.js", () => ({
+  ensureWebBuild: ensureWebBuildMock,
+}));
+
 const { startEmbeddedWeb } =
   await import("../../../../server/start-embedded-web.js");
 type Handle = Awaited<ReturnType<typeof startEmbeddedWeb>>;
@@ -46,6 +53,7 @@ afterEach(async () => {
     else process.env[k] = savedEnv[k];
   }
   openMock.mockReset();
+  ensureWebBuildMock.mockReset();
   vi.restoreAllMocks();
 });
 
@@ -75,12 +83,14 @@ describe("startEmbeddedWeb", () => {
     process.env.MCP_STORAGE_DIR = join(tmp, "storage");
     delete process.env.MCP_SANDBOX_PORT;
     delete process.env.MCP_APP_ORIGIN_PORT;
-    const ensureBuild = vi.fn();
     const port = await freePort();
 
-    handle = await startEmbeddedWeb({ port, staticRoot, ensureBuild });
+    handle = await startEmbeddedWeb({ port, staticRoot });
 
-    expect(ensureBuild).toHaveBeenCalledWith(expect.any(String), staticRoot);
+    expect(ensureWebBuildMock).toHaveBeenCalledWith(
+      expect.any(String),
+      staticRoot,
+    );
     const url = new URL(handle.url);
     expect(url.hostname).toBe("127.0.0.1");
     expect(Number(url.port)).toBe(port);
@@ -108,21 +118,21 @@ describe("startEmbeddedWeb", () => {
     await expect(fetch(`${url.origin}/`)).rejects.toThrow();
   });
 
-  it("keeps user-pinned sandbox / app-origin ports", async () => {
+  it("keeps user-pinned sandbox / app-origin ports and defaults staticRoot to dist", async () => {
     vi.spyOn(console, "log").mockImplementation(() => {});
     tmp = await mkdtemp(join(tmpdir(), "inspector-embedded-"));
-    await writeFile(join(tmp, "index.html"), "<html></html>", "utf-8");
     process.env.MCP_STORAGE_DIR = join(tmp, "storage");
     const sandboxPort = await freePort();
     process.env.MCP_SANDBOX_PORT = String(sandboxPort);
     process.env.MCP_APP_ORIGIN_PORT = "0";
 
-    handle = await startEmbeddedWeb({
-      port: await freePort(),
-      staticRoot: tmp,
-      ensureBuild: () => {},
-    });
+    const port = await freePort();
+    handle = await startEmbeddedWeb({ port });
 
+    expect(ensureWebBuildMock).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.stringMatching(/dist$/),
+    );
     expect(process.env.MCP_SANDBOX_PORT).toBe(String(sandboxPort));
     const res = await fetch(`http://127.0.0.1:${sandboxPort}/sandbox`);
     expect(res.status).toBe(200);

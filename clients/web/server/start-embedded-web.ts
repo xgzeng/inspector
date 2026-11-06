@@ -34,8 +34,6 @@ export interface EmbeddedWebOptions {
    * `build/index.js` and the `server/` source both sit one level below it).
    */
   staticRoot?: string;
-  /** Seam for tests: replaces the on-demand `dist/` build check. */
-  ensureBuild?: (webRoot: string, distRoot: string) => void;
 }
 
 export interface EmbeddedWebHandle {
@@ -63,7 +61,7 @@ export async function startEmbeddedWeb(
   const webRoot = join(__dirname, "..");
   const distRoot = options.staticRoot ?? join(webRoot, "dist");
   config.staticRoot = distRoot;
-  (options.ensureBuild ?? ensureWebBuild)(webRoot, distRoot);
+  ensureWebBuild(webRoot, distRoot);
 
   let resolveUrl!: (url: string) => void;
   const listening = new Promise<string>((resolve) => {
