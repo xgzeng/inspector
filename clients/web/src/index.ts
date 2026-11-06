@@ -5,6 +5,12 @@ import { fileURLToPath } from "node:url";
 import { runWeb } from "../server/run-web.js";
 
 export { runWeb };
+// In-process, exit-free entry for a GUI host (clients/electron).
+export { startEmbeddedWeb } from "../server/start-embedded-web.js";
+export type {
+  EmbeddedWebHandle,
+  EmbeddedWebOptions,
+} from "../server/start-embedded-web.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const isMain =

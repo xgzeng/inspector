@@ -36,7 +36,10 @@ import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const CLIENTS = ["web", "cli", "mcpdo", "tui", "launcher"];
+// `electron` is the desktop shell (clients/electron). Its `electron` package
+// downloads the ~100 MB binary lazily on first run, not at install, so this
+// costs only the JS install here.
+const CLIENTS = ["web", "cli", "mcpdo", "tui", "launcher", "electron"];
 
 /**
  * The environment for a per-client `npm install`: the parent's, minus the

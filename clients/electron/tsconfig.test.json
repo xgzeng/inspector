@@ -1,0 +1,14 @@
+{
+  // Typecheck `__tests__` and `vitest.config.ts`: a `noEmit` sibling of the
+  // build config (whose `rootDir: ./src` rejects them). Mirrors
+  // clients/launcher — see #1791 and #2323 there for the reasoning.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "../..",
+    "allowImportingTsExtensions": true,
+    "types": ["node"]
+  },
+  "include": ["__tests__/**/*", "vitest.config.ts"],
+  "exclude": ["node_modules", "build"]
+}

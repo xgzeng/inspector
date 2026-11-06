@@ -94,6 +94,7 @@ export const EXPECTED_PROJECTS = Object.freeze({
   tui: EXPECTED_TIMEOUTS,
   launcher: EXPECTED_TIMEOUTS,
   mcpdo: EXPECTED_TIMEOUTS,
+  electron: EXPECTED_TIMEOUTS,
 });
 
 /**
@@ -110,6 +111,7 @@ export const CONFIG_ROOTS = Object.freeze([
   { root: "clients/tui", projects: ["tui"] },
   { root: "clients/launcher", projects: ["launcher"] },
   { root: "clients/mcpdo", projects: ["mcpdo"] },
+  { root: "clients/electron", projects: ["electron"] },
 ]);
 
 /**

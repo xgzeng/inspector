@@ -1,0 +1,34 @@
+{
+  "name": "@modelcontextprotocol/inspector-electron",
+  "private": true,
+  "description": "Desktop (Electron) shell for MCP Inspector: runs the prod web stack in-process and shows it in a native window",
+  "license": "SEE LICENSE IN ../../LICENSE",
+  "type": "module",
+  "main": "build/main.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "npm run build && electron .",
+    "stage": "npm run build && node scripts/stage-app.mjs",
+    "dist": "npm run stage && electron-builder --config electron-builder.config.cjs --mac",
+    "lint": "eslint . --max-warnings 0",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
+    "format": "prettier --write src __tests__ scripts \"*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}\"",
+    "format:check": "prettier --check src __tests__ scripts \"*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}\"",
+    "test": "vitest run",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run build",
+    "validate": "npm run check && npm run test"
+  },
+  "devDependencies": {
+    "electron": "45.2.3",
+    "electron-builder": "26.18.0",
+    "commander": "^15.0.0",
+    "strip-ansi": "^7.2.0"
+  },
+  "allowScripts": {
+    "electron-winstaller": false
+  },
+  "overrides": {
+    "undici": "8.12.3",
+    "semver": "7.8.5"
+  }
+}

@@ -1,5 +1,21 @@
 # MCP Inspector
 
+> [!NOTE]
+> **Fork Notice**: This repository is a fork of the official upstream [modelcontextprotocol/inspector](https://github.com/modelcontextprotocol/inspector). It wraps the MCP Inspector web UI into a standalone native desktop application using Electron (`clients/electron`).
+>
+> ### Desktop App Build & Run Steps:
+> ```bash
+> # 1. Install dependencies (cascades into all clients including Electron)
+> npm install
+>
+> # 2. Run the desktop app in development
+> npm run electron:dev
+>
+> # 3. Package the macOS desktop installer (.dmg and .app)
+> npm run electron:dist
+> # Output: clients/electron/release/MCP Inspector-<version>-<arch>.dmg
+> ```
+
 A developer tool for inspecting [Model Context Protocol](https://modelcontextprotocol.io) (MCP) servers. It ships as a single package, `@modelcontextprotocol/inspector`, that provides four ways to inspect a server:
 
 - **Web** — a Vite + React + [Mantine](https://mantine.dev) single-page app with a Node backend.

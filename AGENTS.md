@@ -46,6 +46,9 @@ inspector/
 │   │                 commands; implicit Unix-socket connection daemon). Bundled
 │   │                 into the published package — see clients/mcpdo/README.md
 │   ├── tui/          Ink + React terminal UI (tsdown bundle)
+│   ├── electron/     Desktop shell: runs the prod web stack in the Electron main
+│   │                 process and shows it in a BrowserWindow; electron-builder dmg.
+│   │                 Local/unpublished — not in the npm tarball
 │   └── launcher/     The `mcp-inspector` bin; dispatches to web/cli/tui in-process
 ├── core/             Shared code, consumed via the `@inspector/core` alias (no package.json)
 │   ├── auth/         OAuth end to end + the per-server SecretStore backends

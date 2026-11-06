@@ -54,6 +54,7 @@ const MANIFESTS = [
   "clients/mcpdo",
   "clients/tui",
   "clients/launcher",
+  "clients/electron",
 ];
 
 /**

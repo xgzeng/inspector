@@ -658,7 +658,7 @@ describe("the gate's name", () => {
     // that keep it honest: the gate no longer reaches a client's bare `test`,
     // it still reaches every non-test check `validate` reaches, and `validate`
     // itself (CI's inner loop) is untouched.
-    const clients = ["web", "cli", "mcpdo", "tui", "launcher"];
+    const clients = ["web", "cli", "mcpdo", "tui", "launcher", "electron"];
     const clientScripts = Object.fromEntries(
       clients.map((c) => [
         c,
@@ -712,7 +712,7 @@ describe("the gate's name", () => {
       for (const name of inner)
         if (
           name !== "validate" &&
-          !/^validate:(web|cli|mcpdo|tui|launcher)$/.test(name)
+          !/^validate:(web|cli|mcpdo|tui|launcher|electron)$/.test(name)
         )
           assert.ok(gate.has(name), `local:validate must reach ${name}`);
     });

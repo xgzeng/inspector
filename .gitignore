@@ -11,6 +11,9 @@ dist
 clients/web/dist
 clients/**/build
 clients/**/coverage
+# Electron desktop client: the packaging stage dir and installer output.
+clients/electron/.stage/
+clients/electron/release/
 test-servers/build
 # TypeScript incremental build cache (written by `tsc -b`); web routes its own
 # into node_modules/.tmp via tsBuildInfoFile, but a stray `tsc -b` elsewhere

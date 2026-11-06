@@ -35,6 +35,17 @@ import type { WebServerHandle } from "./types.js";
 
 export type { WebServerHandle };
 
+/** Optional hooks for an in-process host (e.g. the Electron client). */
+export interface StartHonoServerOptions {
+  /**
+   * Called once the UI listener is bound, with the same URL the banner
+   * advertises (token query included unless auth is disabled). An embedding
+   * host uses it as both its readiness signal and the address to load —
+   * `startHonoServer` itself resolves before the listener is up.
+   */
+  onListening?: (url: string) => void;
+}
+
 /**
  * Whether a request path belongs to the API namespace the SPA fallback must
  * not answer: `/api` exactly, or anything under `/api/`. A bare
@@ -53,6 +64,7 @@ const __dirname = dirname(__filename);
  */
 export async function startHonoServer(
   config: WebServerConfig,
+  options: StartHonoServerOptions = {},
 ): Promise<WebServerHandle> {
   const sandboxController = createSandboxController({
     port: config.sandboxPort,
@@ -195,6 +207,7 @@ export async function startHonoServer(
         sandboxUrl ?? undefined,
         secretStorage,
       );
+      options.onListening?.(url);
       if (config.autoOpen) {
         // Never a bare `open(url)`: this callback is synchronous, so a
         // rejection would escape it. See openBrowser.
