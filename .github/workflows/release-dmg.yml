@@ -1,0 +1,93 @@
+name: Build & Publish DMG
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to attach DMG to (e.g. 2.14.0 or v2.14.0). If empty, will use package.json version.'
+        required: false
+        type: string
+      draft:
+        description: 'If release does not exist, create it as a draft'
+        required: false
+        type: boolean
+        default: false
+  release:
+    types: [published]
+  push:
+    tags:
+      - 'v*'
+      - '[0-9]+.[0-9]+.[0-9]+*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CI_NPM_VERSION: '11.20.0'
+
+jobs:
+  build-and-publish-dmg:
+    name: Build & Publish macOS DMG
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+
+      - name: Install the pinned npm CLI (allowScripts needs >= 11.19)
+        run: npm install -g --ignore-scripts "npm@$CI_NPM_VERSION"
+
+      - name: Install dependencies (root + all clients)
+        run: npm install
+
+      - name: Build web runner and desktop app (.dmg and .app)
+        run: npm run electron:dist
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mcp-inspector-dmg
+          path: clients/electron/release/*.dmg*
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish DMG to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_INPUT: ${{ inputs.tag }}
+          IS_DRAFT: ${{ inputs.draft }}
+        run: |
+          if [ -n "${{ github.event.release.tag_name }}" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+          elif [ -n "$TAG_INPUT" ]; then
+            TAG="$TAG_INPUT"
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          else
+            PKG_VERSION="$(node -p "require('./package.json').version")"
+            TAG="v$PKG_VERSION"
+          fi
+
+          echo "Target release tag: $TAG"
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Uploading DMG to existing release $TAG..."
+            gh release upload "$TAG" clients/electron/release/*.dmg --clobber
+          else
+            echo "Release $TAG does not exist. Creating release..."
+            CREATE_FLAGS=""
+            if [ "$IS_DRAFT" = "true" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+              CREATE_FLAGS="--draft"
+            fi
+            gh release create "$TAG" clients/electron/release/*.dmg --title "Release $TAG" --notes "Desktop application build for $TAG" $CREATE_FLAGS
+          fi
