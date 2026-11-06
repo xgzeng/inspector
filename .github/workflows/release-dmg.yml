@@ -51,6 +51,8 @@ jobs:
         run: npm install
 
       - name: Build web runner and desktop app (.dmg and .app)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run electron:dist
 
       - name: Upload DMG artifact

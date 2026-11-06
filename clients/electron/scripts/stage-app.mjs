@@ -26,6 +26,7 @@ import {
   cpSync,
   existsSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -42,14 +43,11 @@ function run(cmd, args, cwd) {
   console.log(`[stage-app] ${cmd} ${args.join(" ")}  (in ${cwd})`);
   const result = spawnSync(cmd, args, {
     cwd,
-    stdio: ["ignore", "pipe", "inherit"],
-    encoding: "utf8",
+    stdio: "inherit",
   });
   if (result.status !== 0) {
-    console.error(result.stdout);
     throw new Error(`${cmd} ${args.join(" ")} failed (exit ${result.status})`);
   }
-  return result.stdout;
 }
 
 if (!existsSync(join(clientDir, "build", "main.js"))) {
@@ -62,13 +60,12 @@ rmSync(stageRoot, { recursive: true, force: true });
 mkdirSync(appDir, { recursive: true });
 
 // 1. Pack (prepack = `npm run build` at the root).
-const packOut = run(
-  "npm",
-  ["pack", "--json", "--pack-destination", stageRoot],
-  repoRoot,
-);
-const [{ filename }] = JSON.parse(packOut.slice(packOut.indexOf("[")));
-const tarball = join(stageRoot, filename);
+run("npm", ["pack", "--pack-destination", stageRoot], repoRoot);
+const tarballs = readdirSync(stageRoot).filter((f) => f.endsWith(".tgz"));
+if (tarballs.length === 0) {
+  throw new Error(`npm pack did not produce a .tgz file in ${stageRoot}`);
+}
+const tarball = join(stageRoot, tarballs[0]);
 
 // 2. Extract (npm tarballs root everything under `package/`).
 run("tar", ["-xzf", tarball, "-C", appDir, "--strip-components=1"], stageRoot);
